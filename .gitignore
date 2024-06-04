@@ -36,3 +36,4 @@ terraform.rc
 .idea
 
 local-secrets
+hosts

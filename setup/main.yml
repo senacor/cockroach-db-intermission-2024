@@ -1,0 +1,9 @@
+-
+  name: verify connection to all hosts
+  hosts: "{% if target is defined%}{{target}}{% else %}all{% endif %}"
+  gather_facts: false
+  tasks:
+    -
+      ping:
+  tags:
+    - reachable
