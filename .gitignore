@@ -37,3 +37,5 @@ terraform.rc
 
 local-secrets
 hosts
+certificate_generation/generated
+**/test_*
