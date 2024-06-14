@@ -5,3 +5,7 @@ output "aws_ec2" {
     }
   }
 }
+
+output "load_balancer" {
+  value = module.region.load_balancer
+}

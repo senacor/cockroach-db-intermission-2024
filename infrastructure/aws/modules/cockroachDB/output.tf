@@ -5,3 +5,9 @@ output "ec2s" {
     private_ip: ec2.private_ip
   }]
 }
+
+output "load_balancer" {
+  value = {
+    dns_name: aws_lb.this.dns_name
+  }
+}
