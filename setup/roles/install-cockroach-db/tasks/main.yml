@@ -1,0 +1,43 @@
+- name: Define variables
+  set_fact:
+    geos_library_directory: /usr/local/lib/cockroach
+    cockroachdb: cockroach-v24.1.0.linux-amd64
+
+- name: Download cockroach
+  get_url:
+    url: "https://binaries.cockroachdb.com/{{cockroachdb}}.tgz"
+    dest: "~"
+
+- name: Extract
+  unarchive:
+    src: "{{cockroachdb}}.tgz"
+    remote_src: true
+    dest: "~"
+
+- name:  Copy binary to PATH
+  copy:
+    src: "{{cockroachdb}}/cockroach"
+    remote_src: true
+    dest: "/usr/local/bin/"
+    mode: u+x,g+x,o+x
+  become: true
+
+- name: Create geos libraries directory
+  file:
+    path: "{{geos_library_directory}}"
+    state: directory
+  become: true
+
+- name: Copy libgeos library
+  copy:
+    src: "{{cockroachdb}}/lib/libgeos.so"
+    remote_src: true
+    dest: "{{geos_library_directory}}/"
+  become: true
+
+- name: Copy libgeos_c library
+  copy:
+    src: "{{cockroachdb}}/lib/libgeos.so"
+    remote_src: true
+    dest: "{{geos_library_directory}}/"
+  become: true
