@@ -1,4 +1,4 @@
-- name: verify connection to all hosts
+- name: Verify connection to all hosts
   hosts: "{% if target is defined%}{{target}}{% else %}all{% endif %}"
   gather_facts: false
   tasks:
@@ -13,3 +13,22 @@
     - aws-time-sync-service-ubuntu
   tags:
     - synchronize-clocks
+
+- name: Upload certificates to nodes
+  hosts: "{% if target is defined%}{{target}}{% else %}all{% endif %}"
+  gather_facts: false
+  roles:
+    - upload-all-files
+  vars:
+    dest_folder: "certs"
+    src_folder: "{{certificates_folder}}/{{inventory_hostname}}"
+  tags:
+    - upload-certificates
+
+- name: Install cockroach db
+  hosts: "{% if target is defined%}{{target}}{% else %}all{% endif %}"
+  gather_facts: false
+  roles:
+    - install-cockroach-db
+  tags:
+    - install-cockroach-db

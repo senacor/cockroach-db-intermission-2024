@@ -39,3 +39,4 @@ local-secrets
 hosts
 certificate_generation/generated
 **/test_*
+tmp
