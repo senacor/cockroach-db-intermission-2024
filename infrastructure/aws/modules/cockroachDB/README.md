@@ -1,0 +1,1 @@
+This module deploys a cluster of the cockroach db in a region

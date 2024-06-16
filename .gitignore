@@ -34,3 +34,9 @@ override.tf.json
 terraform.rc
 
 .idea
+
+local-secrets
+hosts
+certificate_generation/generated
+**/test_*
+tmp

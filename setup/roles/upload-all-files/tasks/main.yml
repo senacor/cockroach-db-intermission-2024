@@ -1,0 +1,9 @@
+- name: Create directory
+  file:
+    path: "~/{{dest_folder}}"
+    state: directory
+
+- name: Copy files
+  copy:
+    src: "{{src_folder}}/"
+    dest: "~/{{dest_folder}}"

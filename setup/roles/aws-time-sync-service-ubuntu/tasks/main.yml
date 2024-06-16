@@ -1,0 +1,15 @@
+- name: Install chrony
+  apt:
+    name: chrony
+    state: present
+
+- name: Configure the server
+  lineinfile:
+    path: /etc/chrony/chrony.conf
+    line: server 169.254.169.123 prefer iburst minpoll 4 maxpoll 4
+    insertbefore: BOF
+  become: true
+
+- name: Restart chrony
+  shell: "/etc/init.d/chrony restart"
+  become: true
