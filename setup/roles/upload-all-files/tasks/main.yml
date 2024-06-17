@@ -7,3 +7,4 @@
   copy:
     src: "{{src_folder}}/"
     dest: "~/{{dest_folder}}"
+    mode: u=rwx,g-rwx,o-rwx
