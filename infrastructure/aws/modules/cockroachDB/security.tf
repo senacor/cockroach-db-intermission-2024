@@ -17,7 +17,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_ssh" {
 
 resource "aws_vpc_security_group_ingress_rule" "inter_node_communication" {
   security_group_id = aws_security_group.this.id
-  cidr_ipv4 = aws_vpc.this.cidr_block
+  cidr_ipv4 = "0.0.0.0/0"
   from_port = 26257
   to_port = 26257
   ip_protocol = "TCP"
@@ -26,7 +26,7 @@ resource "aws_vpc_security_group_ingress_rule" "inter_node_communication" {
 
 resource "aws_vpc_security_group_egress_rule" "inter_node_communication" {
   security_group_id = aws_security_group.this.id
-  cidr_ipv4 = aws_vpc.this.cidr_block
+  cidr_ipv4 = "0.0.0.0/0"
   from_port = 26257
   to_port = 26257
   ip_protocol = "TCP"
@@ -35,7 +35,7 @@ resource "aws_vpc_security_group_egress_rule" "inter_node_communication" {
 
 resource "aws_vpc_security_group_ingress_rule" "db_console" {
   security_group_id = aws_security_group.this.id
-  cidr_ipv4 = aws_vpc.this.cidr_block
+  cidr_ipv4 = "0.0.0.0/0"
   from_port = 8080
   to_port = 8080
   ip_protocol = "TCP"
@@ -44,7 +44,7 @@ resource "aws_vpc_security_group_ingress_rule" "db_console" {
 
 resource "aws_vpc_security_group_egress_rule" "db_console" {
   security_group_id = aws_security_group.this.id
-  cidr_ipv4 = aws_vpc.this.cidr_block
+  cidr_ipv4 = "0.0.0.0/0"
   from_port = 8080
   to_port = 8080
   ip_protocol = "TCP"

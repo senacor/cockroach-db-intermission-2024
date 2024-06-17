@@ -17,7 +17,7 @@ createNodeConfig() {
   echo "[ distinguished_name ]" >>$CONFIG_FILE
   echo "organizationName = Cockroach" >>$CONFIG_FILE
   echo "[ extensions ]" >>$CONFIG_FILE
-  echo "subjectAltName = critical,IP:$1,DNS:localhost,IP:127.0.0.1,DNS:$LOAD_BALANCER_DNS_NAME" >>$CONFIG_FILE
+  echo "subjectAltName = critical,IP:$1,DNS:node,DNS:localhost,IP:127.0.0.1,DNS:$LOAD_BALANCER_DNS_NAME" >>$CONFIG_FILE
 }
 
 createCert() {
@@ -25,7 +25,7 @@ createCert() {
   IP=$2
   echo "name: $NAME"
   echo "ip: $IP"
-  NODE_DIR="certs_$NAME"
+  NODE_DIR="$NAME"
   createDirectory "$NODE_DIR"
   cd "$NODE_DIR"
 
@@ -51,6 +51,8 @@ createCert() {
     -out $NODE_DIR/$NODE_CERT_NAME -outdir $NODE_DIR/$NODE_CERT_DIR/ \
     -in $NODE_DIR/node.csr \
     -batch
+
+  cp "$CA_DIR/$CA_CERT_NAME" "$NODE_DIR/$CA_CERT_NAME"
 }
 
 createCerts() {

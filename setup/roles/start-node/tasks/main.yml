@@ -6,7 +6,7 @@
 
 - name: Set shell commands
   set_fact:
-    solo_shell_command: "cockroach start --certs-dir=certs --advertise-addr={{ ansible_ssh_host }} --cache={{percentage_system_memory_to_use}} --max-sql-memory={{percentage_system_memory_to_use}} --background"
+    solo_shell_command: "cockroach start-single-node --certs-dir=certs --advertise-addr={{ ansible_ssh_host }} --cache={{percentage_system_memory_to_use}} --max-sql-memory={{percentage_system_memory_to_use}} --background"
     multi_shell_command: "cockroach start --certs-dir=certs --advertise-addr={{ ansible_ssh_host }} --join={{ other_host_ips| join(',') }} --cache={{percentage_system_memory_to_use}} --max-sql-memory={{percentage_system_memory_to_use}} --background"
 
 - name: Show shell command - start single node
