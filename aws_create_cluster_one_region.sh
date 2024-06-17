@@ -9,6 +9,7 @@ cd ../../
 cd certificate_generation
 ./generate_ca_certificates.sh
 ./generate_node_certificates.sh ../hosts/aws_hosts.json ../hosts/load_balancer.json
+./generate_client_certificate.sh admin
 cd generated
 CERTIFICATE_FOLDER="$(pwd)"
 cd ../..

@@ -7,6 +7,11 @@ CA_CERT_NAME="ca.crt"
 NODE_PRIVATE_KEY_NAME="node.key"
 NODE_CERT_NAME="node.crt"
 NODE_CERT_DIR="certs"
+CLIENT_PRIVATE_KEY_NAME="client.key"
+CLIENT_CERT_NAME="client.crt"
+CLIENTS_BASE_DIR="clients"
+CLIENT_CERT_DIR="certs"
+
 
 #createDirectory DIRECTORY_TO_BE_CREATED
 createDirectory() {
