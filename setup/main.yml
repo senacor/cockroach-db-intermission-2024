@@ -41,5 +41,6 @@
   vars:
     show_shell_command: true
     max_percentage_used_system_memory: "0.25"
+    storage_device: "/dev/sda2"
   tags:
     - start-node
