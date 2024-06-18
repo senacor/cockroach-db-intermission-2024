@@ -37,7 +37,7 @@
 
 - name: Copy libgeos_c library
   copy:
-    src: "{{cockroachdb}}/lib/libgeos.so"
+    src: "{{cockroachdb}}/lib/libgeos_c.so"
     remote_src: true
     dest: "{{geos_library_directory}}/"
   become: true

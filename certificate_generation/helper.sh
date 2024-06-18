@@ -7,8 +7,6 @@ CA_CERT_NAME="ca.crt"
 NODE_PRIVATE_KEY_NAME="node.key"
 NODE_CERT_NAME="node.crt"
 NODE_CERT_DIR="certs"
-CLIENT_PRIVATE_KEY_NAME="client.key"
-CLIENT_CERT_NAME="client.crt"
 CLIENTS_BASE_DIR="clients"
 CLIENT_CERT_DIR="certs"
 
@@ -19,7 +17,7 @@ createDirectory() {
     mkdir "$1"
   else
     echo "$1 exists! Remove all files in it!"
-    rm -r $1/*
+    rm -rf $1/*
   fi
 }
 
@@ -28,4 +26,8 @@ createPrivateKey(){
   #Create the CA key
   openssl genrsa -out $1 2048
   chmod 400 $1
+}
+
+setClientName(){
+  CLIENT_NAME="client.$1"
 }
