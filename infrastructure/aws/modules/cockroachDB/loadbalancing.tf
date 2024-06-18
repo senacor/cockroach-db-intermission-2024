@@ -1,3 +1,9 @@
+locals {
+  ports = [26257, 8080]
+  ports_map = {for index,value in local.ports: index => value }
+  inverted_ports_map = {for key,value in local.ports_map: value => key }
+}
+
 resource "aws_lb" "this" {
   name = "cockroach-db-load-balancer"
   internal = false
@@ -9,8 +15,9 @@ resource "aws_lb" "this" {
 }
 
 resource "aws_lb_target_group" "this" {
+  for_each = local.ports_map
   name = "cockroach-db-nodes"
-  port = 26257
+  port = each.value
   protocol = "TCP"
   vpc_id = aws_vpc.this.id
 
@@ -28,21 +35,24 @@ resource "aws_lb_target_group" "this" {
 }
 
 resource "aws_lb_target_group_attachment" "this" {
-  count = var.number_of_available_zones
-  target_group_arn = aws_lb_target_group.this.arn
-  target_id = aws_instance.this[count.index].id
-  port = 26257
+  for_each = {
+    for pair in setproduct([for index in range(var.number_of_available_zones): index], local.ports): "${pair[0]}.${pair[1]}" => {index: pair[0], port: pair[1]}
+  }
+  target_group_arn = aws_lb_target_group.this[local.inverted_ports_map[each.value.port]].arn
+  target_id = aws_instance.this[tonumber(each.value.index)].id
+  port = tonumber(each.value.port)
 }
 
 resource "aws_lb_listener" "this" {
+  for_each = local.ports_map
   load_balancer_arn = aws_lb.this.arn
-  port = 26257
+  port = each.value
   # Specify the port your instances are listening on
   protocol = "TCP"
 
   default_action {
     type = "forward"
-    target_group_arn = aws_lb_target_group.this.arn
+    target_group_arn = aws_lb_target_group.this[each.key].arn
   }
 
   tags = local.default_tags
