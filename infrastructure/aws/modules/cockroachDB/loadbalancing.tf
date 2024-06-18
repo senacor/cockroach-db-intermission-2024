@@ -16,7 +16,7 @@ resource "aws_lb" "this" {
 
 resource "aws_lb_target_group" "this" {
   for_each = local.ports_map
-  name = "cockroach-db-nodes"
+  name = "cockroach-db-nodes-${each.key}"
   port = each.value
   protocol = "TCP"
   vpc_id = aws_vpc.this.id

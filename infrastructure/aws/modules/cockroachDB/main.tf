@@ -6,13 +6,15 @@ resource "aws_vpc" "this" {
   })
 }
 
+data "aws_region" "current" {}
+
 locals {
   available_zones_suffixes = [
     "a",
     "b",
     "c",
     "d"]
-  available_zones = [for index in range(var.number_of_available_zones): "${var.region}${local.available_zones_suffixes[index]}"]
+  available_zones = [for index in range(var.number_of_available_zones): "${data.aws_region.current.name}${local.available_zones_suffixes[index]}"]
   cidr_blocks = [for index, name  in local.available_zones : "10.0.${index + 1}.0/24"]
   default_tags = {
     project = "cockroach-intermission-2024"

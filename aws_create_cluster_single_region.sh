@@ -1,10 +1,10 @@
 #!/bin/sh
 
-cd infrastructure/aws
+cd infrastructure/aws/single_region
 terraform apply
-terraform output -json aws_ec2 > ../../hosts/aws_hosts.json
-terraform output -json load_balancer > ../../hosts/load_balancer.json
-cd ../../
+terraform output -json aws_ec2 > ../../../hosts/aws_hosts.json
+terraform output -json load_balancer > ../../../hosts/load_balancer.json
+cd ../../../
 
 ROOT_USER=root
 cd certificate_generation
