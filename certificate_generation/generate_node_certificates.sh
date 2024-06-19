@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## Usage: generate_node_certificates.sh NAME_OF_THE_HOST_FILE NAME_OF_THE_LOAD_BALANCER_FILE
+## Usage: generate_node_certificates.sh NAME_OF_THE_HOST_FILE NAME_OF_THE_LOAD_BALANCER_FILE ROOT_USER
 source helper.sh
 
 createNodeConfig() {
@@ -23,8 +23,10 @@ createNodeConfig() {
 createCert() {
   NAME=$1
   IP=$2
+  ROOT_USER=$3
   echo "name: $NAME"
   echo "ip: $IP"
+  echo "root_user: $ROOT_USER"
   NODE_DIR="$NAME"
   createDirectory "$NODE_DIR"
   cd "$NODE_DIR"
@@ -52,14 +54,20 @@ createCert() {
     -in $NODE_DIR/node.csr \
     -batch
 
+  setClientName $ROOT_USER
+  local CLIENT_CERT_NAME="$CLIENT_NAME.crt"
+  local CLIENT_PRIVATE_KEY_NAME="$CLIENT_NAME.key"
+
   cp "$CA_DIR/$CA_CERT_NAME" "$NODE_DIR/$CA_CERT_NAME"
+  cp "$CLIENTS_BASE_DIR/$ROOT_USER/$CLIENT_CERT_NAME" "$NODE_DIR/$CLIENT_CERT_NAME"
+  cp "$CLIENTS_BASE_DIR/$ROOT_USER/$CLIENT_PRIVATE_KEY_NAME" "$NODE_DIR/$CLIENT_PRIVATE_KEY_NAME"
 }
 
 createCerts() {
   for i in "${!HOSTS[@]}"; do
     NAME=$i
     IP="${HOSTS[$i]}"
-    createCert $NAME $IP
+    createCert $NAME $IP $1
   done
 }
 
@@ -71,5 +79,5 @@ LOAD_BALANCER_DNS_NAME="$(jq -r '.dns_name' $2)"
 
 # create certificate for each node
 cd $BASE_DIR
-createCerts
+createCerts $3
 cd ..

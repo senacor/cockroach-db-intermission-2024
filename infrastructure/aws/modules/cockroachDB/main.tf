@@ -6,13 +6,15 @@ resource "aws_vpc" "this" {
   })
 }
 
+data "aws_region" "current" {}
+
 locals {
   available_zones_suffixes = [
     "a",
     "b",
     "c",
     "d"]
-  available_zones = [for index in range(var.number_of_available_zones): "${var.region}${local.available_zones_suffixes[index]}"]
+  available_zones = [for index in range(var.number_of_available_zones): "${data.aws_region.current.name}${local.available_zones_suffixes[index]}"]
   cidr_blocks = [for index, name  in local.available_zones : "10.0.${index + 1}.0/24"]
   default_tags = {
     project = "cockroach-intermission-2024"
@@ -63,23 +65,4 @@ resource "aws_instance" "this" {
   tags = merge(local.default_tags, {
     Name = "cockroach-intermission-2024-${count.index}"
   })
-}
-
-resource "aws_ebs_volume" "this" {
-  count = var.number_of_available_zones
-  availability_zone = local.available_zones[count.index]
-  size = 4
-  type = "gp2"
-
-  tags = merge(local.default_tags, {
-    Name = aws_instance.this[count.index].tags["Name"]
-  })
-}
-
-resource "aws_volume_attachment" "this" {
-  count = var.number_of_available_zones
-  device_name = "/dev/sda2"
-  # Device name to attach the volume to on the EC2 instance
-  instance_id = aws_instance.this[count.index].id
-  volume_id = aws_ebs_volume.this[count.index].id
 }

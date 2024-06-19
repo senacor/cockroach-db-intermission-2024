@@ -4,7 +4,7 @@
 source helper.sh
 
 createClientConfig() {
-  local CONFIG_FILE=node.cnf
+  CONFIG_FILE=client.cnf
   if [ -f "$CONFIG_FILE" ]; then
     echo "$CONFIG_FILE exists! Remove it!"
     rm -r $CONFIG_FILE
@@ -18,9 +18,13 @@ createClientConfig() {
 }
 
 createCert() {
-  NAME=$1
+  local NAME=$1
   echo "username: $NAME"
-  CLIENT_DIR="$CLIENTS_BASE_DIR/$NAME"
+  local CLIENT_DIR="$CLIENTS_BASE_DIR/$NAME"
+  setClientName $1
+  local CLIENT_PRIVATE_KEY_NAME="$CLIENT_NAME.key"
+  local CLIENT_CERT_NAME="$CLIENT_NAME.crt"
+  local CLIENT_SIGNING_REQUEST_NAME="$CLIENT_NAME.csr"
   createDirectory "$CLIENT_DIR"
   cd "$CLIENT_DIR"
 
@@ -28,13 +32,20 @@ createCert() {
   createPrivateKey "$CLIENT_PRIVATE_KEY_NAME"
   createDirectory "$CLIENT_CERT_DIR"
 
+ echo "$(pwd)"
   openssl req \
     -new \
-    -config node.cnf \
+    -config $CONFIG_FILE \
     -key $CLIENT_PRIVATE_KEY_NAME \
-    -out client.csr \
+    -out $CLIENT_SIGNING_REQUEST_NAME \
     -batch
 
+  echo "openssl req \
+            -new \
+            -config $CONFIG_FILE \
+            -key $CLIENT_PRIVATE_KEY_NAME \
+            -out $CLIENT_SIGNING_REQUEST_NAME \
+            -batch"
   cd ../..
 
   openssl ca \
@@ -44,7 +55,7 @@ createCert() {
     -policy signing_policy \
     -extensions signing_node_req \
     -out $CLIENT_DIR/$CLIENT_CERT_NAME -outdir $CLIENT_DIR/$CLIENT_CERT_DIR/ \
-    -in $CLIENT_DIR/client.csr \
+    -in $CLIENT_DIR/$CLIENT_SIGNING_REQUEST_NAME \
     -batch
 }
 

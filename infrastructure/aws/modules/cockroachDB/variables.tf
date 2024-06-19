@@ -1,9 +1,3 @@
-variable "region" {
-  type = string
-  default = "eu-central-1"
-  description = "the id of the region, where 1 instance per available zone of the cockroach db should be deployed"
-}
-
 variable "number_of_available_zones" {
   type = number
   default = 1
