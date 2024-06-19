@@ -1,11 +1,7 @@
 output "aws_ec2" {
   value = {
     instances = {
-      hosts = zipmap([for ec2 in module.region.ec2s: ec2.name], [for ec2 in module.region.ec2s: {ansible_host: ec2.public_ip}])
+      hosts = zipmap([for ec2 in module.region.ec2s: ec2.name], [for ec2 in module.region.ec2s: {ansible_host: ec2.public_ip, load_balancer: module.region.load_balancer.dns_name}])
     }
   }
-}
-
-output "load_balancer" {
-  value = module.region.load_balancer
 }
