@@ -66,22 +66,3 @@ resource "aws_instance" "this" {
     Name = "cockroach-intermission-2024-${count.index}"
   })
 }
-
-resource "aws_ebs_volume" "this" {
-  count = var.number_of_available_zones
-  availability_zone = local.available_zones[count.index]
-  size = 4
-  type = "gp2"
-
-  tags = merge(local.default_tags, {
-    Name = aws_instance.this[count.index].tags["Name"]
-  })
-}
-
-resource "aws_volume_attachment" "this" {
-  count = var.number_of_available_zones
-  device_name = "/dev/sda2"
-  # Device name to attach the volume to on the EC2 instance
-  instance_id = aws_instance.this[count.index].id
-  volume_id = aws_ebs_volume.this[count.index].id
-}
