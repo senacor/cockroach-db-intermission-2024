@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cd infrastructure/aws/single_region
+cd infrastructure/aws/multi_region
 terraform apply
 terraform output -json aws_ec2 > ../../../hosts/aws_hosts.json
 cd ../../../
