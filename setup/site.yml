@@ -1,0 +1,38 @@
+- name: CONFIGURE OS
+  hosts: all
+  gather_facts: yes
+  become: yes
+  roles:
+    - config_os
+  tags:
+    - platform
+    - config_os
+
+# - name: Upload certificates to nodes
+#   hosts: "{% if target is defined%}{{target}}{% else %}all{% endif %}"
+#   gather_facts: false
+#   roles:
+#     - upload-all-files
+#   vars:
+#     dest_folder: "certs"
+#     src_folder: "{{certificates_folder}}/{{inventory_hostname}}"
+#   tags:
+#     - upload-certificates
+
+- name: Install cockroach db
+  hosts: "{% if target is defined%}{{target}}{% else %}all{% endif %}"
+  gather_facts: false
+  roles:
+    - install-cockroach-db
+  tags:
+    - install-cockroach-db
+
+- name: Start node
+  hosts: "{% if target is defined%}{{target}}{% else %}all{% endif %}"
+  gather_facts: false
+  roles:
+    - start-node
+  vars:
+    max_percentage_used_system_memory: "0.25"
+  tags:
+    - start-node

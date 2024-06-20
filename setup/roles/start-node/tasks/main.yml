@@ -15,13 +15,13 @@
   debug:
     msg: "Started node ips: {{ started_node_ips}}"
 #
-- name: Start node
-  shell: "cockroach start-single-node --certs-dir=certs --advertise-addr={{ ansible_ssh_host }} --cache={{percentage_system_memory_to_use}} --max-sql-memory={{percentage_system_memory_to_use}} --background"
-  when: started_node_ips | length == 0
+# - name: Start node
+#   shell: "cockroach start-single-node --certs-dir=certs --advertise-addr={{ ansible_ssh_host }} --cache={{percentage_system_memory_to_use}} --max-sql-memory={{percentage_system_memory_to_use}} --background"
+#   when: started_node_ips | length == 0
 
 - name: Start node and join with the started nodes
-  shell: "cockroach start --certs-dir=certs --advertise-addr={{ ansible_ssh_host }} --join={{ started_node_ips }} --cache={{percentage_system_memory_to_use}} --max-sql-memory={{percentage_system_memory_to_use}} --background"
-  when: started_node_ips | length > 0
+  shell: "cockroach start --certs-dir=certs --advertise-addr={{ ansible_ssh_host }} --join={{ groups['instances'] | map('extract', hostvars, ['ansible_host']) | join(':26257,') }}:26257 --cache={{percentage_system_memory_to_use}} --max-sql-memory={{percentage_system_memory_to_use}} --background"
+# when: started_node_ips | length > 0
 
 - name: Add the ip of the current host to the started node ips
   set_fact:
