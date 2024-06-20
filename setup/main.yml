@@ -40,6 +40,6 @@
   roles:
     - start-node
   vars:
-    max_percentage_used_system_memory: "0.25"
+    max_percentage_used_system_memory: "0.75"
   tags:
     - start-node
