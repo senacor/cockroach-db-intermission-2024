@@ -1,37 +1,7 @@
-- name: Initialize value of shared variable
-  set_fact:
-    started_node_ips: ""
-  delegate_to: localhost
-  delegate_facts: true
-  run_once: yes
-  when: hostvars['localhost']['started_node_ips'] is undefined
 
-- name: Set cloud, region and zone
-  set_fact:
-    region: "{{ hostvars[inventory_hostname]['region'] }}"
-    zone: "{{ hostvars[inventory_hostname]['zone'] }}"
-    cloud: "{{ hostvars[inventory_hostname]['cloud'] }}"
-    percentage_system_memory_to_use: "{{ max_percentage_used_system_memory | default(0.25)}}"
-    started_node_ips: "{{ hostvars['localhost']['started_node_ips'] }}"
-
-- name: Show started_node_ips
-  debug:
-    msg: "Started node ips: {{ started_node_ips}}"
-#
-- name: Start node
-  shell: "cockroach start-single-node --certs-dir=certs --advertise-addr={{ ansible_ssh_host }} --cache={{percentage_system_memory_to_use}} --max-sql-memory={{percentage_system_memory_to_use}} --background --locality=cloud={{cloud}},region={{region}},zone={{zone}}"
-  when: started_node_ips | length == 0
-
-- name: Start node and join with the started nodes
-  shell: "cockroach start --certs-dir=certs --advertise-addr={{ ansible_ssh_host }} --join={{ started_node_ips }} --cache={{percentage_system_memory_to_use}} --max-sql-memory={{percentage_system_memory_to_use}} --background --locality=cloud={{cloud}},region={{region}},zone={{zone}}"
-  when: started_node_ips | length > 0
-
-- name: Add the ip of the current host to the started node ips
-  set_fact:
-    started_node_ips: "{{ ansible_ssh_host }}{% if started_node_ips | length > 0 %},{{ started_node_ips }}{% endif %}"
-
-- name: Save the shared variable to localhost
-  set_fact:
-    started_node_ips: "{{ started_node_ips }}"
-  delegate_to: localhost
-  delegate_facts: true
+- name: Start and enable Cockroach systemd service
+  systemd:
+    name: cockroach
+    state: restarted
+    enabled: yes
+  become: yes

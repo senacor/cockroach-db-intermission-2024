@@ -41,3 +41,11 @@
     remote_src: true
     dest: "{{geos_library_directory}}/"
   become: true
+
+- name: Create Cockroach systemd service
+  template:
+    src: templates/cockroach.service.j2
+    dest: /etc/systemd/system/cockroach.service
+  become: yes
+  notify:
+    - reload systemd
