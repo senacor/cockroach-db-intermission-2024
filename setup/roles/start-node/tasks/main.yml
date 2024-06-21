@@ -6,8 +6,11 @@
   run_once: yes
   when: hostvars['localhost']['started_node_ips'] is undefined
 
-- name: Initialize the shared variable on current host
+- name: Set cloud, region and zone
   set_fact:
+    region: "{{ hostvars[inventory_hostname]['region'] }}"
+    zone: "{{ hostvars[inventory_hostname]['zone'] }}"
+    cloud: "{{ hostvars[inventory_hostname]['cloud'] }}"
     percentage_system_memory_to_use: "{{ max_percentage_used_system_memory | default(0.25)}}"
     started_node_ips: "{{ hostvars['localhost']['started_node_ips'] }}"
 
@@ -15,13 +18,13 @@
   debug:
     msg: "Started node ips: {{ started_node_ips}}"
 #
-# - name: Start node
-#   shell: "cockroach start-single-node --certs-dir=certs --advertise-addr={{ ansible_ssh_host }} --cache={{percentage_system_memory_to_use}} --max-sql-memory={{percentage_system_memory_to_use}} --background"
-#   when: started_node_ips | length == 0
+- name: Start node
+  shell: "cockroach start-single-node --certs-dir=certs --advertise-addr={{ ansible_ssh_host }} --cache={{percentage_system_memory_to_use}} --max-sql-memory={{percentage_system_memory_to_use}} --background --locality=cloud={{cloud}},region={{region}},zone={{zone}}"
+  when: started_node_ips | length == 0
 
 - name: Start node and join with the started nodes
-  shell: "cockroach start --certs-dir=certs --advertise-addr={{ ansible_ssh_host }} --join={{ groups['instances'] | map('extract', hostvars, ['ansible_host']) | join(':26257,') }}:26257 --cache={{percentage_system_memory_to_use}} --max-sql-memory={{percentage_system_memory_to_use}} --background"
-# when: started_node_ips | length > 0
+  shell: "cockroach start --certs-dir=certs --advertise-addr={{ ansible_ssh_host }} --join={{ started_node_ips }} --cache={{percentage_system_memory_to_use}} --max-sql-memory={{percentage_system_memory_to_use}} --background --locality=cloud={{cloud}},region={{region}},zone={{zone}}"
+  when: started_node_ips | length > 0
 
 - name: Add the ip of the current host to the started node ips
   set_fact:
