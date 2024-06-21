@@ -40,3 +40,8 @@ hosts
 certificate_generation/generated
 **/test_*
 tmp
+
+
+infrastructure/azure/generated
+images
+setup/inventory.json
