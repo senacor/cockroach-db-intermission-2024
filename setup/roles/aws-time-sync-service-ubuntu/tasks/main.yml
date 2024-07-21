@@ -2,6 +2,7 @@
   apt:
     name: chrony
     state: present
+  become: true
 
 - name: Configure the server
   lineinfile:
@@ -13,3 +14,4 @@
 - name: Restart chrony
   shell: "/etc/init.d/chrony restart"
   become: true
+- name:

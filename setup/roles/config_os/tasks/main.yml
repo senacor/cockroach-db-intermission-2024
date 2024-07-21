@@ -17,7 +17,7 @@
       package:
         name: "{{ ntp_package_name }}"
         state: latest
-        
+
     - name: Add the preferred Chrony/NTP server
       lineinfile:
         path: "{{ ntp_conf }}"
@@ -36,11 +36,11 @@
     reload: yes
 
 - name: Set timezone to UTC
-  ansible.builtin.shell: |
+  shell: |
     timedatectl set-timezone UTC
 
 - name: find attached disks bigger than 100GB
-  ansible.builtin.shell: |
+  shell: |
     lsblk -o NAME,TYPE,SIZE -p -n -b -s | \
       awk '$NF ~ /[1-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]/' | \
       grep -v '└─' | \

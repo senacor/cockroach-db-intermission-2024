@@ -8,9 +8,11 @@
 
 - name: Synchronize clocks
   hosts: "{% if target is defined%}{{target}}{% else %}all{% endif %}"
-  gather_facts: false
+#  gather_facts: false
   roles:
-    - aws-time-sync-service-ubuntu
+#    - aws-time-sync-service-ubuntu
+    - config_os
+  become: true
   tags:
     - synchronize-clocks
 

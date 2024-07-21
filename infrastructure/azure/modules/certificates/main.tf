@@ -13,9 +13,10 @@ terraform {
 
 variable "nodes" {
   type = list(object({
-    name        = string
-    public_ip   = string
-    internal_ip = string
+    name            = string
+    public_ip       = string
+    internal_ip     = string
+    loadbalancer_ip = string
   }))
 }
 
@@ -61,8 +62,8 @@ resource "tls_cert_request" "node-cert-request" {
     common_name  = "Cockroach CA"
     organization = "Cockroach"
   }
-  dns_names    = ["node", "localhost", "cockroach-db-load-balancer-91272505df4b8aa8.elb.eu-central-1.amazonaws.com"]
-  ip_addresses = [each.value.public_ip, each.value.internal_ip, "127.0.0.1"]
+  dns_names    = ["node", "localhost"]
+  ip_addresses = [each.value.public_ip, each.value.internal_ip, each.value.loadbalancer_ip, "127.0.0.1"]
 }
 
 resource "tls_locally_signed_cert" "node-cert" {

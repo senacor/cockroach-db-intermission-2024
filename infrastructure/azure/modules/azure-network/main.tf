@@ -104,3 +104,7 @@ output "nodes" {
     nic_id      = azurerm_network_interface.network_interface[node.name].id
   })]
 }
+
+output "loadbalancer_ip" {
+  value = azurerm_public_ip.loadbalancer_ip.ip_address
+}

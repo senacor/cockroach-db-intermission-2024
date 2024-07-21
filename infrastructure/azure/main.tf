@@ -12,6 +12,8 @@ terraform {
 }
 
 locals {
+  ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCuL0txPW8uhm0x+B+0AXnIWYPg+zNv0O4zEWFEHYWOyPEoTswyGBH66L6ieyQb6IXavQH3o5bcTPTW27TypeBg+BBO0TW6QsY3MOIsIHMSntmj/PP0elNqE0e5ATUoOhGAClViL5BvVJCKk1EaEbgnxdvTpBfYtSWJq/YJv3kneOGq08acoe6QupVFXZceBcz3bKcJ0Q9DCfvcol69l+KmO+FfPR3pw4zGDdgag7N1VmR076k2o4XTWFjT8BE3INE3u1soxYe7cf2bX4O9U418t5VNRrk1HDbnayPVlnFrx/H/3MnCaPu8UCttuKzbnQj3iFdR/0IQAyQm/w6cTNL3Ip7W/h4kb055hVgSzk3HwRS3b2SfGms1SWWVGJ7a9e6SdKsWpfF3YUyr+so5PwxXaN1cTeJRde7kiSluAdDiRt+t0n/B2kyyDdkUu17eCPhc6veTwV//H26RiHZkP/7Fy4IOLBYyhLVAbsEr+Jy02PGLm8iTfcQFaW3bPMW/P+xa1WivSAIGvqLXo2clUFS3U3VP98aJn7W9WNpQBq0tIju/wWa4T55W9O7YehbUEktFklcnGRj5psMUH2RL2BfU196PzFgfaAqZwGRjnoFUPji32JLYGTW/lFFBj/0KCV1FYPePwGdl3BuZNj5JEvwzIP6mceao46CYq+72kcd+uQ=="
+
   regions = {
     eu-west-azure = {
       provider      = "azure"
@@ -43,7 +45,12 @@ module "azure-network" {
 }
 
 locals {
-  nodes2 = flatten([for _, result in module.azure-network : result.nodes])
+  nodes2 = flatten([for _, result in module.azure-network : [
+    for node in result.nodes : merge(node, {
+      loadbalancer_ip = result.loadbalancer_ip
+    })
+    ]
+  ])
 }
 
 output "nodes" {
@@ -59,9 +66,6 @@ module "certificates" {
 provider "azurerm" {
   features {}
 }
-provider "azuread" {
-  tenant_id = "52497ec2-0945-4f55-8021-79766363dd96"
-}
 
 data "cloudinit_config" "cockroachdb" {
   for_each      = { for node in local.nodes2 : node.name => node }
@@ -73,25 +77,29 @@ data "cloudinit_config" "cockroachdb" {
     content_type = "text/cloud-config"
 
     content = yamlencode({
+      users = [
+        "default",
+        { name = "cockroach", ssh_authorized_keys = local.ssh_public_key }
+      ],
       write_files = [
         {
-          path        = "/home/adminuser/certs/node.key"
+          path        = "/var/lib/cockroach/certs/node.key"
           content     = module.certificates.node_keys[each.key]
-          owner       = "adminuser:adminuser"
+          owner       = "cockroach:cockroach"
           permissions = "0600"
           defer       = true
         },
         {
-          path        = "/home/adminuser/certs/node.crt"
+          path        = "/var/lib/cockroach/certs/node.crt"
           content     = module.certificates.node_certificates[each.key]
-          owner       = "adminuser:adminuser"
+          owner       = "cockroach:cockroach"
           permissions = "0600"
           defer       = true
         },
         {
-          path        = "/home/adminuser/certs/ca.crt"
+          path        = "/var/lib/cockroach/certs/ca.crt"
           content     = module.certificates.ca_certificate_pem
-          owner       = "adminuser:adminuser"
+          owner       = "cockroach:cockroach"
           permissions = "0600"
           defer       = true
         }
@@ -115,8 +123,9 @@ resource "azurerm_linux_virtual_machine" "cockroachdb-node" {
   custom_data = data.cloudinit_config.cockroachdb[each.key].rendered
 
   admin_ssh_key {
-    username   = "adminuser"
-    public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCfnEb7WAPrQSWhm1L9Kx0abiyGMXtfNI4aV+eBocJMq92h+k3HUkZvcY6u6v/VHqe+kzVl6EYq/O/49k4FwY3biaUxMDXQNd+B0MuWZHFqjDI60uiZqrhSaM++op/ZFP9xrS14I/qISxvS1ZqMuMuypPYg3Botsn69GVaw3+FPEvrWjb0o7et8H1oYKC28R19x/N/t8ZvMRZGwilHmpPuJY7aaIDTLEQ1z6lrYNgNuGRaWpWeQ6A388+OuwbxQXj8bx24IWLg8UfLEtaoztI9XWU+jKTmv3Kam814vuoLKnnrDRrLKeTT9oDK8MhVaOcf0bTAjzcJpXjZ6TLf2hePGTsfJFm0UPsVk/GCX5xcComi1E652nSx5/vwU06nfVh5ofrrlVciINDpzF8bl+clvUHq+y7O7LZvrRpFgzEvrpDDoIHePPdl070wUdSIKww8mc8+KasJBt0JY+yXQarIKcCQkuugvW8y1idTwHfV9FZXzeYbrsw2YyM67IW3xPOMeV8ft465Oxi2XKTj2KlqY6oDQWN/RIbstEegpqL8IDWzZb4zXs0pkNS5nMdVAJ0qDkfmWYWmJHQ00oGESi97iE8PQJCPkFa2JzD998OrS48xDigWG+AxvKQFIr5apcDV1XABMus0yBxd3cbRGL2nLnWqNOTMYe271DQxR+Tokjw=="
+    username = "adminuser"
+    # public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCfnEb7WAPrQSWhm1L9Kx0abiyGMXtfNI4aV+eBocJMq92h+k3HUkZvcY6u6v/VHqe+kzVl6EYq/O/49k4FwY3biaUxMDXQNd+B0MuWZHFqjDI60uiZqrhSaM++op/ZFP9xrS14I/qISxvS1ZqMuMuypPYg3Botsn69GVaw3+FPEvrWjb0o7et8H1oYKC28R19x/N/t8ZvMRZGwilHmpPuJY7aaIDTLEQ1z6lrYNgNuGRaWpWeQ6A388+OuwbxQXj8bx24IWLg8UfLEtaoztI9XWU+jKTmv3Kam814vuoLKnnrDRrLKeTT9oDK8MhVaOcf0bTAjzcJpXjZ6TLf2hePGTsfJFm0UPsVk/GCX5xcComi1E652nSx5/vwU06nfVh5ofrrlVciINDpzF8bl+clvUHq+y7O7LZvrRpFgzEvrpDDoIHePPdl070wUdSIKww8mc8+KasJBt0JY+yXQarIKcCQkuugvW8y1idTwHfV9FZXzeYbrsw2YyM67IW3xPOMeV8ft465Oxi2XKTj2KlqY6oDQWN/RIbstEegpqL8IDWzZb4zXs0pkNS5nMdVAJ0qDkfmWYWmJHQ00oGESi97iE8PQJCPkFa2JzD998OrS48xDigWG+AxvKQFIr5apcDV1XABMus0yBxd3cbRGL2nLnWqNOTMYe271DQxR+Tokjw=="
+    public_key = local.ssh_public_key
   }
 
   os_disk {

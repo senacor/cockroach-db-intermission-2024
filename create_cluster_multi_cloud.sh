@@ -10,4 +10,4 @@ cd ../..
 echo $CERTIFICATE_FOLDER
 
 export ANSIBLE_HOST_KEY_CHECKING=False
-ansible-playbook setup/main.yml -i hosts/aws_hosts.json --key-file ~/aws_azure_cockroach_db_private_key --extra-vars certificates_folder=$CERTIFICATE_FOLDER
+ansible-playbook setup/main.yml -i hosts/aws_hosts.json --key-file ~/aws_azure_cockroach_db_private_key --extra-vars certificates_folder=$CERTIFICATE_FOLDER -v
